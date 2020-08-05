@@ -4,7 +4,7 @@
         <div class="container">
             <h3> Login </h3>
             <hr>
-            <form method="POST" action="<?php echo base_url('index.php/users');?>">
+            <form method="POST" action="<?php echo base_url('index.php/users/login');?>">
                 <div class="form-group">
                     <label for="email"> Email address </label>
                     <input type="text" class="form-control" name="email" id="email" value="<?= set_value('email')?>"> 

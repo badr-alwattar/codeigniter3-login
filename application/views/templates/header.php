@@ -11,7 +11,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="/">Ci4 Login</a>
+        <a class="navbar-brand" href="/index.php/home">Ci4 Login</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -26,10 +26,13 @@
                 </li>
             </ul>
         <?php else: ?>
+            
             <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="/index.php/dashboard">Dashboard</a>
-                </li>
+                <?php if( isset($this->session->logged_in) && $this->User_model->isAdmin($this->session->user_id)): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/index.php/dashboard">Dashboard</a>
+                    </li>
+                <?php endif; ?>
                 <li class="nav-item">
                     <a class="nav-link" href="/index.php/users/logout">Logout</a>
                 </li>
@@ -38,6 +41,7 @@
         </div>
     </div>
 </nav>
+
 
 <div class="container">
 

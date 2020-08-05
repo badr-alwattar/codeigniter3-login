@@ -2,123 +2,116 @@
 
 
 class Users extends CI_Controller {
-	function __construct(){
+	function __construct() {
 		parent::__construct();
 		$this->load->library(['form_validation', 'session']);
 		$this->load->helper(['form', 'url']);
-		// $this->load->model('Login_model','login');
- 	}
+		$this->load->model('User_model');
+		
+	}
+	
+	
+	public function index() {
+		redirect('/users/login', 'refresh');
+	}
 
-	public function index()
-	{
-		// $data = array( 
-		// 	'role_id' => 1, 
-		// 	'name' => 'Badr',
-		//  );
-		 
-		// insert
-		// $this->db->insert("stud", $data);
-
-		// update
-		// $this->db->set($data); 
-		// $this->db->where("id", 3); 
-		// $this->db->update("stud", $data);
-		 
-		// delete
-		// $this->db->delete("stud", "id = 4");
-		// $query = $this->db->get("stud"); 
-		// $data['records'] = $query->result();
-
-		// print_r($data['records']);
-		// $this->load->view('login');
-
-		// helper(['form']);
-
+	
+	public function login() {
 		$data = [];
-		if($this->input->server('REQUEST_METHOD') === 'POST') {
-			$this->form_validation->set_rules('email', 'E-mail', array('required', 'valid_email')); // |valid_email|callback_email_check
-			$this->form_validation->set_rules('password', 'Password', array('required', 'min_length[6]'));
 
-			if ($this->form_validation->run() == FALSE) { 
+		if($this->input->server('REQUEST_METHOD') === 'POST') {
+			$this->form_validation->set_rules('email', 'E-mail', array('required', 'valid_email'));
+			$this->form_validation->set_rules('password', 'Password', array('required', 'min_length[6]'));
+			if ($this->form_validation->run() == FALSE) {
 				$this->load->view('templates/header', $data);
 				$this->load->view('login');
 				$this->load->view('templates/footer');
 				return;
 			}
 
-			// $this->db->select('firstname, lastname, email');
-			// $this->db->from('users');
-			// $query = $this->db->where('email', $this->input->post('email'));
-			$query = $this->db->get('users');
-			$res= '';
-			foreach ($query->result() as $row) {
-				if($row->email === $this->input->post('email')) {
-					$res = $row;
-					break;	
+			$res = $this->User_model->get_user();
+			if($res){
+				if(!password_verify($this->input->post('password'), $res->password)) {
+					$data['wrong_cardentials'] = 'Email or password is not correct';
+					$this->load->view('templates/header', $data);
+					$this->load->view('login');
+					$this->load->view('templates/footer');
+					return;
 				}
-			}
-			if(!password_verify($this->input->post('password'), $res->password)) {
+			} else {
 				$data['wrong_cardentials'] = 'Email or password is not correct';
 				$this->load->view('templates/header', $data);
 				$this->load->view('login');
 				$this->load->view('templates/footer');
 				return;
 			}
-			$this->session->firstname = $res->firstname;
-			$this->session->lastname = $res->lastname;
-			$this->session->email = $res->email;
-			$this->session->logged_in = TRUE;
+
+			$user = [
+				'user_id' => $res->id,
+				'firstname' => $res->firstname,
+				'lastname' => $res->lastname,
+				'email' => $res->email,
+			];
+
+			$this->User_model->set_user_session($user);
+
 			 
-			redirect('/dashboard', 'refresh');
-			// $this->load->view('templates/header', $data);
-			// $this->load->view('dashboard');
-			// $this->load->view('templates/footer');
-			// var_dump($this->session->userdata());
+			redirect('/home', 'refresh');
 			return;
 
-		}	
-		$this->load->view('templates/header', $data);
-		$this->load->view('login');
-		$this->load->view('templates/footer');
+		}
+		else {
+			if($this->session->logged_in) {
+				redirect('/home', 'refresh');
+				return;
+			}
+			$this->load->view('templates/header', $data);
+			$this->load->view('login');
+			$this->load->view('templates/footer');
+		} 
 	}
 
 
 	public function register() { 
 		$data = [];
 		if($this->input->server('REQUEST_METHOD') === 'POST') {
-			$this->form_validation->set_rules('firstname', 'Firstname', array('required'));
-			$this->form_validation->set_rules('lastname', 'Lastname', array('required'));
-			$this->form_validation->set_rules('email', 'E-mail', array('required', 'valid_email','is_unique[users.email]')); // |valid_email|callback_email_check
-			$this->form_validation->set_rules('password', 'Password', array('required', 'min_length[6]'));
-			$this->form_validation->set_rules('password_confirm', 'Password_Confirm', array('required', 'matches[password]'));
-
+			
+			$this->User_model->registration_rules();
+			
 			if ($this->form_validation->run() == FALSE) { 
 				$this->load->view('templates/header', $data);
 				$this->load->view('register');
 				$this->load->view('templates/footer');
 				return;
 			}
+			$this->User_model->add_user();
+			$res = $this->User_model->get_user();
 
-			$cardential = [
-				'firstname' => $this->input->post('firstname'),
-				'lastname' => $this->input->post('lastname'),
-				'email' => $this->input->post('email'),
-				'password' => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
+			$user = [
+				'user_id' => $res->id,
+				'firstname' => $res->firstname,
+				'lastname' => $res->lastname,
+				'email' => $res->email,
 			];
 
-			$this->db->insert('users',$cardential);
-			$this->session->firstname = $this->input->post('firstname');
-			$this->session->lastname = $this->input->post('lastname');
-			$this->session->email = $this->input->post('email');
-			$this->session->logged_in = TRUE;
-			redirect('/dashboard', 'refresh');
+			$this->User_model->set_user_session($user);
+
+			redirect('/home', 'refresh');
+		}
+		else {
+			if($this->session->logged_in) {
+				redirect('/home', 'refresh');
+				return;
+			}
+			$this->load->view('templates/header', $data);
+			$this->load->view('register');
+			$this->load->view('templates/footer');
 		}
 
-		$this->load->view('templates/header', $data);
-		$this->load->view('register');
-		$this->load->view('templates/footer');
+		
 	}
 	
+
 	public function logout() {
 		session_destroy();
 		redirect('/users', 'refresh');
