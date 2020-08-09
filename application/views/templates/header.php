@@ -32,15 +32,32 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/index.php/dashboard">Dashboard</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Category
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="/index.php/categories/create">New Category</a>
+                            <a class="dropdown-item" href="/index.php/categories/">Show Categories</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/index.php/items/create">Add Item</a>
+                    </li>
                 <?php endif; ?>
+                <li class="nav-item">
+                        <a class="nav-link" href="/index.php/items">Items</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/index.php/users/logout">Logout</a>
                 </li>
+                
             </ul>
         <?php endif; ?>
         </div>
     </div>
 </nav>
+
 
 
 <div class="container">
